@@ -1,4 +1,4 @@
-from crawlers import tokopedia_crawlers
+from crawlers import tokopedia_crawler
 
 
-html = tokopedia_crawlers.tokopedia_search("ryzen 5 7500f")
+html = tokopedia_crawler.tokopedia_search("ryzen 5 7500f")
