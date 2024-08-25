@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from .import generate_product
 from . import data_collector
+from . import integration_check
 
 
 def parse_html(html):
@@ -11,5 +12,6 @@ def parse_html(html):
     for product_div in all_product_div:
         product_data_pool = data_collector.collect_product_data(product_div)
         product = generate_product.generate_formatted_product(product_data_pool)
-        product_list.append(product)
+        if integration_check.is_integrated(product):
+            product_list.append(product)
     return product_list
