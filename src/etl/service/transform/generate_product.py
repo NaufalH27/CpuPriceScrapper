@@ -1,52 +1,92 @@
-from . import extract_utils
-from . import output_format
-from .helper import data_cleaning
+from collections import deque
+from . import data_identifier
+from . import formats
+from .helper import list_helper
+from .helper import url_helper
+from .helper import string_helper
 
 def generate_formatted_product(data_pool):
-    product = output_format.get_initial_product_format()
-    extract_utils.extract_link(product, data_pool["product_link"])
-    populize_product_text(product, data_pool["text"])
-    populize_product_img(product, data_pool["img"])
-    transformed_product = output_format.transform_to_final_format(product)
+    product_data_dump = formats.get_raw_data_dump_format()
+    populate_product_url_destination(product_data_dump, data_pool["tracking_url"])
+    populate_product_text(product_data_dump, data_pool["text"])
+    populate_product_img(product_data_dump, data_pool["img"])
+    transformed_product = formats.transform_to_final_format(product_data_dump)
     return transformed_product
 
-def populize_product_img(product, image_list):
-    for image in image_list:
-        if product["badge"] == None:
-            extract_utils.extract_badge(product, image)
 
-        if product["image"] == None:
-            extract_utils.extract_image(product, image)  
-
-
-def populize_product_text(product, text_list):
-    for text in text_list:
-        if product["is_ad"] == None or product["is_ad"] == False:
-            extract_utils.check_ad(product, text)
         
-        extract_utils.extract_price(product, text)
+def populate_product_url_destination(product, tracking_url):
+    regex = r'www\.tokopedia\.com(.*)'
+    match = string_helper.search_regex(tracking_url, regex)
+    if match:
+        encoded_url_destination = match.group()
+        decoded_url_destination = url_helper.decode_url(encoded_url_destination)
+        product["product_url"] = decoded_url_destination
 
-        if product["discount"] == None:
-            extract_utils.extract_discount(product, text)
 
-        if product["sold_items"] == None:
-            extract_utils.extract_sold_items(product, text)
 
-        if product["rating"] == None:
-            extract_utils.extract_rating(product, text)
+def populate_product_img(product, image_list):
+    for image_url in image_list:
+        if data_identifier.is_seller_badge_url(image_url):
+           product["seller_badge_url"] = image_url
 
-    texts_to_remove = {text for text in product.values() if text is not None}
-    text_list = [text for text in text_list if text not in texts_to_remove]
-    text_list = data_cleaning.remove_anomalies(text_list)
+        if data_identifier.is_product_image_url(image_url):
+            product["image_url"] = image_url
 
-    if product["location"] == None:
-        extract_utils.extract_location(product, text_list)
-        text_list = [text for text in text_list if text != product["location"]]
 
-    if product["name"] == None:
-        extract_utils.extract_name(product, text_list)
-        text_list = [text for text in text_list if text != product["name"]]
 
-    if product["seller"] == None:
-        extract_utils.extract_seller(product, text_list)
-        text_list = [text for text in text_list if text != product["seller"]]
+def populate_product_text(product, raw_text_entries):
+    raw_text_entries = list_helper.remove_anomalies(raw_text_entries)
+    leftover_text = []
+   
+    text_queue = deque(raw_text_entries)
+    while(text_queue):
+        text = text_queue.popleft()
+        if data_identifier.is_ad(text):
+            product["is_ad"] = True 
+            continue
+
+        if data_identifier.is_product_price(text):
+            current_price = string_helper.rupiah_price_tag_to_int(text)
+            if product["price"] is None:
+                product["price"] = text
+                product["price_int"] = current_price
+
+            elif current_price <  product["price_int"]:
+                product["price"] = text
+                product["price_int"] = current_price
+                
+            continue
+
+        if data_identifier.is_product_discount(text):
+            product["discount"] = text
+            product["discount_float"] = string_helper.percentage_to_float(text)
+            continue
+
+        if data_identifier.is_product_sold_item_status(text):
+            product["sold_items"] = string_helper.remove_substring(text, "terjual").strip()
+            continue
+
+        if data_identifier.is_product_rating(text):
+            product["rating"] = string_helper.rating_to_float(text)
+            continue
+
+        if data_identifier.is_location(text):
+            product["location"] = text
+            continue
+
+        leftover_text.append(text)
+
+    
+    if product["product_url"] is not None:
+        regex = r'https://www\.tokopedia\.com/([^/]+)/([^?]+)'
+        match = string_helper.search_regex(product["product_url"], regex)
+        if match:
+            seller_slug = match.group(1)
+            product_name_slug = match.group(2)
+
+        product["product_name"] = string_helper.get_best_match_from_list(product_name_slug, leftover_text)
+        product["seller_name"] = string_helper.get_best_match_from_list(seller_slug, leftover_text)
+        product["seller_url"] =  f"https://www.tokopedia.com/{seller_slug}"
+
+

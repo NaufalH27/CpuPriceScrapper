@@ -1,17 +1,24 @@
 from bs4 import BeautifulSoup
 from .import generate_product
-from . import data_collector
-from . import integration_check
+from . import generate_data_pool
 
 
-def parse_html(html):
-    product_list = []
+def transform_html(html):
     soup = BeautifulSoup(html, features="html.parser")
-    parent_div = soup.find('div', {'data-testid': 'cntrFindProductsResult'})
-    all_product_div = parent_div.find_all('div', {'data-ssr':"findProductSSR"})
+    product_grid_container = soup.find('div', {'data-testid': 'cntrFindProductsResult'})
+
+    if not product_grid_container:
+        return []
+
+    all_product_div = product_grid_container.find_all('div', {'data-ssr':"findProductSSR"})
+    
+    if not all_product_div:
+        return []
+    
+    product_list = []
     for product_div in all_product_div:
-        product_data_pool = data_collector.collect_product_data(product_div)
+        product_data_pool = generate_data_pool.collect_data(product_div)
         product = generate_product.generate_formatted_product(product_data_pool)
-        if integration_check.is_integrated(product):
-            product_list.append(product)
+        product_list.append(product)
+
     return product_list

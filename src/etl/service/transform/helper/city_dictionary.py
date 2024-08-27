@@ -1,9 +1,22 @@
 from bs4 import BeautifulSoup
 import os
+from . import string_helper
 
 
-#this is the final result after running the generate_city_map() script, just use this for performance
-def get_city_map_by_letter():
+
+def get_city_list_by_first_letter(text):
+    try:
+        city_dict = get_city_dictionary_by_initial()
+        clean_text = string_helper.remove_substring(text, "Kab. ").strip()
+        first_letter = clean_text[0]
+        return city_dict[first_letter]
+    except:
+        return None
+
+
+
+#this is the final result after running the generate_city_dictionary() script, just use this for performance
+def get_city_dictionary_by_initial():
     return {
     'A': ['Kab. Aceh Barat', 'Kab. Aceh Barat Daya', 'Kab. Aceh Besar', 'Kab. Aceh Jaya', 'Kab. Aceh Selatan', 'Kab. Aceh Singkil', 'Kab. Aceh Tamiang', 'Kab. Aceh Tengah', 'Kab. Aceh Tenggara', 'Kab. Aceh Timur', 'Kab. Aceh Utara', 'Kab. Agam', 'Kab. Alor', 'Kab. Asahan', 'Kab. Asmat', 'Kab. Kotabaru', 'Kab. Kotawaringin Barat', 'Kab. Kotawaringin Timur', 'Ambon'], 
     'B': ['Bali', 'Banten', 'Bengkulu', 'Bandung', 'Kab. Badung', 'Kab. Balangan', 'Kab. Bandung', 'Kab. Bandung Barat', 'Kab. Banggai', 'Kab. Banggai Kepulauan', 'Kab. Banggai Laut', 'Kab. Bangka', 'Kab. Bangka Barat', 'Kab. Bangkalan', 'Kab. Bangka Selatan', 'Kab. Bangka Tengah', 'Kab. Bangli', 'Kab. Banjar', 'Kab. Banjarnegara', 'Kab. Bantaeng', 'Kab. Bantul', 'Kab. Banyuasin', 'Kab. Banyumas', 'Kab. Banyuwangi', 'Kab. Barito Kuala', 'Kab. Barito Selatan', 'Kab. Barito Timur', 'Kab. Barito Utara', 'Kab. Barru', 'Kab. Batang', 'Kab. Batanghari', 'Kab. Batu Bara', 'Kab. Baturaja', 'Kab. Bekasi', 'Kab. Belitung', 'Kab. Belitung Timur', 'Kab. Belu', 'Kab. Bener Meriah', 'Kab. Bengkalis', 'Kab. Bengkayang', 'Kab. Bengkulu Selatan', 'Kab. Bengkulu Tengah', 'Kab. Bengkulu Utara', 'Kab. Berau', 'Kab. Biak Numfor', 'Kab. Bima', 'Kab. Bintan', 'Kab. Bireuen', 'Kab. Blitar', 'Kab. Blora', 'Kab. Boalemo', 'Kab. Bogor', 'Kab. Bojonegoro', 'Kab. Bolaang Mongondow', 'Kab. Bolaang Mongondow Selatan', 'Kab. Bolaang Mongondow Timur', 'Kab. Bolaang Mongondow Utara', 'Kab. Bombana', 'Kab. Bondowoso', 'Kab. Bone', 'Kab. Bone Bolango', 'Kab. Boven Digoel', 'Kab. Boyolali', 'Kab. Brebes', 'Kab. Buleleng', 'Kab. Bulukumba', 'Kab. Bulungan', 'Kab. Bulungan', 'Kab. Bungo', 'Kab. Buol', 'Kab. Buru', 'Kab. Buru Selatan', 'Kab. Buru Selatan', 'Kab. Buton', 'Kab. Buton Selatan', 'Kab. Buton Tengah', 'Kab. Buton Utara', 'Balikpapan', 'Banjar', 'Banjarbaru', 'Batam', 'Batu', 'Bau Bau', 'Bekasi', 'Bima', 'Binjai', 'Bitung', 'Blitar', 'Bogor', 'Bontang', 'Bukittinggi', 'Banda Aceh', 'Bandar Lampung', 'Banjarmasin', 'Bengkulu'], 
@@ -31,12 +44,14 @@ def get_city_map_by_letter():
 
 
 
+
+
 #this is the scrapping script i use, kota.html is just some part of the tokopedia html page,
 #the part is taken from tokopedia search filter in "lokasi section"
 
 # this function should not be used in production.
 # This function is provided for demonstration purposes only.
-def generate_city_map():
+def generate_city_dictionary():
     city_dict = {} 
 
     curr_dir = os.getcwd()

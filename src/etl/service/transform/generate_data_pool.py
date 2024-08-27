@@ -1,10 +1,7 @@
+from . import formats
 
-def collect_product_data(product_div):
-    data_pool = {
-        "product_link": None,
-        "text": [], 
-        "img" :[]
-    }
+def collect_data(product_div):
+    data_pool = formats.get_data_pool_format()
 
     for element in product_div.descendants:
         if isinstance(element, str):
@@ -18,8 +15,8 @@ def collect_product_data(product_div):
                 data_pool["img"].append(img_src)
 
         elif element.name == 'a':
-            product_link = element.get("href")
-            if product_link:
-                data_pool["product_link"] = product_link
+            tracking_url = element.get("href")
+            if tracking_url:
+                data_pool["tracking_url"] = tracking_url
 
     return data_pool
