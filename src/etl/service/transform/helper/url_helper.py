@@ -1,5 +1,4 @@
 from urllib.parse import unquote
-import re
 
 def decode_url(encoded_url):
     decoded_url = unquote(encoded_url)

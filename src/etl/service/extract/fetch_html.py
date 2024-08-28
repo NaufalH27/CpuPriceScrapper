@@ -2,9 +2,9 @@ import time
 from selenium import webdriver
 
 
-driver = webdriver.Chrome()
 
 def get_html(url):
+    driver = webdriver.Chrome()
     driver.get(url)
     scroll_position = 0
     scroll_increment = 250 

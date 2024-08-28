@@ -31,3 +31,9 @@ def get_best_match_from_list(text, text_list):
     best_match, _ = process.extractOne(text, text_list)
     return best_match
 
+def is_new_price_lower(new_price, old_price):
+    if old_price is None:
+        return True
+    
+    if rupiah_price_tag_to_int(new_price) < rupiah_price_tag_to_int(old_price):
+        return True

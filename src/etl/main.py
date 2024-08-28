@@ -1,14 +1,11 @@
-from service.extract import tokopedia_crawler
-from service.transform import parse
-import json
+from fastapi import FastAPI
+from api import api_router
 
-html = tokopedia_crawler.tokopedia_search("ryzen 5 7500f", pages=1)
+app = FastAPI()
 
-product_list = parse.transform_html(html)
-pretty_json = json.dumps(product_list, indent=4)
-print(pretty_json)
+app.include_router(api_router)
 
 
-
-
-
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

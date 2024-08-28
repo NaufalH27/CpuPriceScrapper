@@ -1,2 +1,2 @@
-from . import tokopedia_crawler 
+from . import tokopedia_html 
 

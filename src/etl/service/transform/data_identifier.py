@@ -32,7 +32,6 @@ def is_product_price(text):
     price_regex = r'^Rp[\d.,]+'
     return string_helper.is_regex_found(text, price_regex)
     
-
 def is_location(text):
     city_list = city_dictionary.get_city_list_by_first_letter(text)
     if city_list is not None and text in city_list:
